@@ -1,4 +1,3 @@
-import re
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -19,6 +18,7 @@ class QueryRequest(BaseModel):
 
 # Global cache for the FAISS database
 db_cache = None
+llm_cache = None
 
 @app.post("/create_database")
 async def create_database():
@@ -38,58 +38,41 @@ async def create_database():
 @app.post("/generate_response")
 async def generate_response(request: QueryRequest):
     try:
-        # Load the database from cache if not already loaded
         global db_cache
-        print(db_cache)
         if db_cache is None:
             embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2', model_kwargs={"device": "cpu"})
             db_cache = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
+            
+        global llm_cache
+        if llm_cache is None:
+            llm_cache = CTransformers(
+                model="TheBloke/Llama-2-7B-Chat-GGML",
+                model_type="llama",
+                config={
+                    'temperature': 0.01,
+                    'max_new_tokens': 600,
+                    'context_length': 1200
+                }
+            )
+        
+        custom_prompt_template = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
 
-        # Initialize the model and prompt
-        llm = CTransformers(
-            model="TheBloke/Llama-2-7B-Chat-GGML",
-            model_type="llama",
-            config={
-                'temperature': 0.5,
-                'stream': True,
-                'max_new_tokens': 600
-            }
-        )
-        custom_prompt_template = """
-                ###Instructions:###
-                You are an AI Integrated Chatbot. Your task is to give a relevant answer to the question asked by the User based on the context provided. The context will be pieces of information from a particular document. If you don't know the answer, just say that you don't know gracefully; don't try to make up an answer. Answer the question given in a natural, human-like manner.
+        Contexts: {context}
 
-                ###Context: {context}###
-                ###Question: {question}###
-
-                ******************
-                Note:
-                1. For greetings like "hi", "hello", "how are you", and farewells like "bye", "good bye", always respond appropriately regardless of the contextAlways respond to greetings and good-byes.
-                2. When the question is out of the scope of the context provided, just inform that it is out of your scope.
-                3. Don't give improper or incorrect information or information that are not provided in the context. 
-                4. Only return the helpful & correct answer below and nothing else. Verify the information before responding. 
-                ******************
-
-                Helpful answer:
-                """
+        Question: {question}
+        Helpful Answer:"""
                 
         qa_prompt = PromptTemplate(template=custom_prompt_template, input_variables=['context', 'question'])
         qa_chain = RetrievalQA.from_chain_type(
-            llm=llm,
+            llm=llm_cache,
             chain_type='stuff',
-            retriever=db_cache.as_retriever(search_kwargs={'k': 1}, search_type='mmr'),
+            retriever=db_cache.as_retriever(search_kwargs={'k': 2}),
             return_source_documents=True,
             chain_type_kwargs={'prompt': qa_prompt}
         )
 
         # Generate response
-        response_stream = qa_chain.stream({'query': request.query})
-        response = ""
-        for res in response_stream:
-            response += res['result']
-            
-        response = response.replace('\\"', '"')
-        response = re.sub(r'\s+', ' ', response).strip()
+        response = qa_chain.invoke({'query': request.query})
         
         return {"response": response}
     except Exception as e:
@@ -98,3 +81,17 @@ async def generate_response(request: QueryRequest):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+        # custom_prompt_template = """
+        #         ###Instructions:###
+        #         You are an AI Integrated Chatbot. Your task is to give a relevant answer to the question asked by the User based on the context provided. The context will be pieces of information from a particular document. Please follow the following rules:
+        #         1. For greetings like "hi", "hello", "how are you", and farewells like "bye", "good bye", always respond appropriately regardless of the contextAlways respond to greetings and good-byes.
+        #         2. When the question is out of the scope of the context provided, just inform that it is out of your scope. If you don't know the answer, just say that you don't know gracefully; don't try to make up an answer. Answer the question given in a natural, human-like manner.
+        #         3. Don't give improper or incorrect information or information that are not provided in the context. 
+        #         4. Only return the helpful & correct answer below and nothing else. Verify the information before responding. 
+
+        #         ###Context: {context}###
+        #         ###Question: {question}###
+
+        #         Helpful answer:
+        #          """
