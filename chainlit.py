@@ -3,9 +3,13 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_community.llms.ctransformers import CTransformers
 from langchain.chains.retrieval_qa.base import RetrievalQA
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 import chainlit as cl
+import os
 
 DB_FAISS_PATH = 'vectorstores/db_faiss'
+DATA_PATH = 'data/'
 
 custom_prompt_template = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
 
@@ -46,10 +50,20 @@ def load_llm():
             )
     return llm
 
+def create_database(embeddings):
+    if not os.path.exists(DB_FAISS_PATH):
+        loader = DirectoryLoader(DATA_PATH, glob='*.pdf', loader_cls=PyPDFLoader)
+        documents = loader.load()
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+        texts = text_splitter.split_documents(documents)
+        db = FAISS.from_documents(texts, embeddings)
+        db.save_local(DB_FAISS_PATH)
+        
+
 #QA Model Function
 def qa_bot():
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2",
-                                       model_kwargs={'device': 'cpu'})
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={'device': 'cpu'})
+    create_database(embeddings)
     db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
     llm = load_llm()
     qa_prompt = set_custom_prompt()

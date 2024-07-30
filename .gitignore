@@ -1,13 +1,9 @@
+vectorstores/
 .vscode/
-chatbot-env/
-chroma/
-database/
-chroma2/
-chroma3/
 llama-2-7b-chat.ggmlv3.q8_0.bin
 __pycache__/
-vectorstores2/
 vectorstores/
 .files/
 .chainlit/
 chainlit.md
+chatbot-env/
