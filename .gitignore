@@ -7,3 +7,4 @@ vectorstores/
 chainlit.md
 chatbot-env/
 .env
+data/HTML/

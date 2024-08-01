@@ -6,3 +6,5 @@ pypdf
 chainlit 
 langchain-community
 langchain_huggingface
+groq
+langchain_groq
