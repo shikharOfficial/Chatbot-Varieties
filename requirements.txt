@@ -6,3 +6,4 @@ pypdf
 chainlit 
 langchain-community
 langchain_huggingface
+langchainhub
