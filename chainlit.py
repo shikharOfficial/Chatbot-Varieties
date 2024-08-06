@@ -7,6 +7,7 @@ from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import chainlit as cl
 import os
+import time
 
 DB_FAISS_PATH = 'vectorstores/db_faiss'
 DATA_PATH = 'data/'
@@ -83,20 +84,28 @@ async def start():
     chain = qa_bot()
     msg = cl.Message(content="Starting the bot...")
     await msg.send()
-    msg.content = "Hi, Welcome to Meta-GPT. What is your query?"
+    msg.content = "Hi, Welcome to metR-GPT. What is your query?"
     await msg.update()
 
     cl.user_session.set("chain", chain)
 
 @cl.on_message
 async def main(message: cl.Message):
+    start_time = time.time()
+    
     chain = cl.user_session.get("chain") 
     cb = cl.AsyncLangchainCallbackHandler(
         stream_final_answer=True, answer_prefix_tokens=["FINAL", "ANSWER"]
     )
     cb.answer_reached = True
     res = await chain.acall(message.content, callbacks=[cb])
+    
+    end_time = time.time()
+    duration = end_time - start_time
+    
     answer = res["result"]
+    
+    answer += f"\nTime taken for query retrieval: {duration:.2f} seconds"
 
     await cl.Message(content=answer).send()
 

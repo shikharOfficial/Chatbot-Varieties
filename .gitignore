@@ -6,3 +6,4 @@ vectorstores/
 .files/
 chainlit.md
 chatbot-env/
+.chainlit/
