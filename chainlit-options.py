@@ -17,7 +17,7 @@ import chainlit as cl
 
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
 DB_FAISS_PATH = 'vectorstores/db_faiss'
-MODEL_NAME = "TheBloke/Llama-2-7B-Chat-GGML"
+MODEL_NAME = "llama-2-7b-chat.Q8_0.gguf"
 SETTINGS = {
     'temperature': 0.01,
     'max_new_tokens': 600,
@@ -25,6 +25,7 @@ SETTINGS = {
 }
 llm = CTransformers(
         model=MODEL_NAME,
+        model_type="gguf",
         model_type="llama",
         config=SETTINGS 
     )
