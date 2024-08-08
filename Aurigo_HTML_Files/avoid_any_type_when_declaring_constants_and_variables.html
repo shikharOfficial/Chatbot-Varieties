@@ -1,0 +1,99 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html lang="en-us">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="UTF-8">
+  <meta name="copyright" content="(C) Copyright 2024">
+  <meta name="DC.rights.owner" content="(C) Copyright 2024">
+  <meta name="DC.type" content="topic">
+  <meta name="DC.format" content="HTML5">
+  <meta name="DC.identifier" content="y9007737">
+  <meta name="DC.language" content="en-us">
+  <link rel="stylesheet" type="text/css" href="commonltr.css">
+  <title>Avoid any type when declaring constants and variables</title>
+</head>
+
+<body id="y9007737">
+  <nav role="toc">
+    <ul>
+      <li><a href="introduction.html">Introduction</a></li>
+      <li><a href="use_angular_cli.html">Use Angular CLI</a></li>
+      <li><a href="maintain_proper_folder_structure.html">Maintain proper folder structure</a></li>
+      <li><a href="follow_consistent_angular_coding_styles.html">Follow consistent Angular coding styles</a></li>
+      <li><a href="use_es6_features.html">Use ES6 features</a></li>
+      <li><a href="use_trackby_along_with_ngfor.html">Use trackBy along with ngFor</a></li>
+      <li><a href="break_down_into_small_reusable_components.html">Break down into small reusable components</a></li>
+      <li><a href="use_lazy_loading.html">Use Lazy Loading</a></li>
+      <li><a href="use_indexts.html">Use Index.ts</a></li>
+      <li><a href="avoid_logic_in_templates.html">Avoid logic in templates</a></li>
+      <li><a href="cache_api_calls.html"> Cache API calls</a></li>
+      <li><a href="use_async_pipe_in_templates.html">Use async pipe in templates</a></li>
+      <li><a href="declare_safe_strings.html">Declare safe strings</a></li>
+      <li class="active"><a href="avoid_any_type_when_declaring_constants_and_variables.html">Avoid any type when
+          declaring constants and variables</a></li>
+      <li><a href="state_management.html">State management</a></li>
+      <li><a href="use_cdk_virtual_scroll.html">Use CDK Virtual Scroll</a></li>
+    </ul>
+  </nav>
+  <main role="main">
+    <article role="article" aria-labelledby="y9007737___Toc61856918">
+      <h1 class="title topictitle1" id="y9007737___Toc61856918">Avoid any type when declaring constants and variables
+      </h1>
+      <div class="body">
+        <p class="p">Declare variables or constants with proper types other than any. This will reduce unintended
+          problems. Another advantage of having good typing in our application is that it makes refactoring easier. If
+          we had a proper typing, we would get a compile-time error as shown below:</p>
+        <table class="table">
+          <caption></caption>
+          <colgroup>
+            <col>
+          </colgroup>
+          <tbody class="tbody">
+            <tr class="row">
+              <td class="entry">
+                <p class="p">export interface HotFolder {</p>
+                <p class="p"> id: string;</p>
+                <p class="p"> folderName: string;</p>
+                <p class="p"> enabled: string;</p>
+                <p class="p"> processDefinitionName: string;</p>
+                <p class="p"> params: { [key: string]: string };</p>
+                <p class="p">}</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table class="table">
+          <caption></caption>
+          <colgroup>
+            <col>
+          </colgroup>
+          <tbody class="tbody">
+            <tr class="row">
+              <td class="entry">
+                <p class="p">export class HotFoldersAddComponent implements OnInit</p>
+                <p class="p">hotFolder: HotFolder;</p>
+                <p class="p">constructor() {</p>
+                <p class="p"> }</p>
+                <p class="p">ngOnInit() {</p>
+                <p class="p">this.hotFolder = {</p>
+                <p class="p">id: 12345,</p>
+                <p class="p">folderName: ' /home/rsuite/test ',</p>
+                <p class="p">enabled: true,</p>
+                <p class="p">path: ‘test’</p>
+                <p class="p">}</p>
+                <p class="p">}</p>
+                <p class="p">}</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="p">// Error</p>
+        <p class="p">Type ‘{ id: number; foldername: string; path: string; }’ is not assignable to type ‘hotFolder.</p>
+        <p class="p">Object literal may only specify known properties, and ‘path does not exist in type ‘hotFolder.</p>
+      </div>
+    </article>
+  </main>
+</body>
+
+</html>
