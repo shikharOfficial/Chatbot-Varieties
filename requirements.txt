@@ -7,3 +7,6 @@ chainlit
 langchain-community
 langchain_huggingface
 langchainhub
+streamlit
+langchain_groq
+streamlit_option_menu
