@@ -21,7 +21,7 @@ MODEL_NAME = "llama-2-7b-chat.Q8_0.gguf"
 SETTINGS = {
     'temperature': 0.01,
     'max_new_tokens': 600,
-    'context_length': 1200
+    'context_length': 8000
 }
 llm = CTransformers(
         model=MODEL_NAME,
