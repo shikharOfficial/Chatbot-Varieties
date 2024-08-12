@@ -9,6 +9,9 @@ import chainlit as cl
 import os
 import time
 import torch
+from accelerate import Accelerator
+
+accelerator = Accelerator()
 
 DB_FAISS_PATH = 'vectorstores/db_faiss'
 DATA_PATH = 'data/PDF/Aurigo'
@@ -29,6 +32,7 @@ if device == "cuda":
     config['gpu_layers'] = 110
     SETTINGS["gpu_layers"] = 110
 llm = CTransformers(**SETTINGS)
+llm, config = accelerator.prepare(llm, config)
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={'device': device})
 custom_prompt_template = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
         Contexts: {context}
